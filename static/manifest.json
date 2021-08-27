@@ -1,0 +1,37 @@
+{
+  "version": "0.1",
+  "manifest_version": 3,
+
+  "name": "IFrame Buster",
+  "description": "Removal of unwanted iframes to increase browser performance and reduce malicious and intrusive ads",
+
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+
+  "background": {
+    "type": "module",
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "run_at": "document_start",
+      "js": [ "main.js"]
+    }
+  ],
+  "action": {
+    "default_icon": "icon.jpg",
+    "default_title": "IFrame Buster",
+    "default_popup": "optionsPopup.html"
+  },
+  "options_ui": {
+    "open_in_tab": false,
+    "page": "optionsPage.html"
+  },
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
