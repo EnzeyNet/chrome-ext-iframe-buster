@@ -1,7 +1,6 @@
 import svelte from 'rollup-plugin-svelte';
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
-import { terser } from 'rollup-plugin-terser';
 import css from 'rollup-plugin-css-only';
 import path from 'path';
 
@@ -15,8 +14,8 @@ const bundleSvelte = (inputFile, outputFile) => {
     return {
     	input: inputFile,
     	output: {
-    		sourcemap: true,
-    		format: 'iife',
+    		sourcemap: false,
+    		format: 'module',
     		name: fileName,
     		file: outputFile
     	},
@@ -41,10 +40,6 @@ const bundleSvelte = (inputFile, outputFile) => {
     			dedupe: ['svelte', 'page']
     		}),
     		commonjs(),
-
-    		// If we're building for production (npm run build
-    		// instead of npm run dev), minify
-    		terser()
     	],
     	watch: {
     		clearScreen: false
@@ -60,17 +55,13 @@ const bundleJS = (inputFile, outputFile) => {
     return {
     	input: inputFile,
     	output: {
-    		sourcemap: true,
+    		sourcemap: false,
     		format: 'module',
     		name: fileName,
     		file: outputFile
     	},
     	plugins: [
     		commonjs(),
-
-    		// If we're building for production (npm run build
-    		// instead of npm run dev), minify
-    		terser()
     	],
     	watch: {
     		clearScreen: false
@@ -81,6 +72,6 @@ const bundleJS = (inputFile, outputFile) => {
 export default [
     bundleSvelte('src/optionsPage/optionsPage.js', 'build/optionsPage.js'),
     bundleSvelte('src/optionsPopup/optionsPopup.js', 'build/optionsPopup.js'),
-    bundleJS('src/main/app.js', 'build/main.js'),
+    bundleJS('src/context/app.js', 'build/context.js'),
     bundleJS('src/background/app.js', 'build/background.js')
 ];

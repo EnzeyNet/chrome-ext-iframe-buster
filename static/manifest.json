@@ -7,7 +7,8 @@
 
   "permissions": [
     "activeTab",
-    "scripting"
+    "background",
+    "storage"
   ],
 
   "background": {
@@ -18,7 +19,7 @@
     {
       "matches": ["http://*/*", "https://*/*"],
       "run_at": "document_start",
-      "js": [ "main.js"]
+      "js": [ "context.js" ]
     }
   ],
   "action": {

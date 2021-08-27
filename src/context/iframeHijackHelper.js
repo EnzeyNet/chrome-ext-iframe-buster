@@ -1,8 +1,7 @@
-/*
-    All IFrames are initially removed from the document.
-    This is to ensure they do not load anything until the
-    async service confirms the domain is trusted.
-*/
+import {
+    domainsAllowed,
+    domainsBlocked,
+} from './domainStore'
 
 const iframeToPlaceholder = new Map()
 
@@ -15,17 +14,29 @@ const createPlaceholderElem = () => {
 
 const replaceIFrame = function(iframe) {
     if (iframe instanceof HTMLIFrameElement) {
+        const iframeSrc = getIFrameSrc(iframe)
+        if (iframeSrc) {
+            domainsBlocked.add( iframeSrc )
+        }
+
         const placeholderElem = createPlaceholderElem()
         iframe.parentNode.insertBefore(placeholderElem, iframe)
         iframe.remove();
-        iframeToPlaceholder.put(iframe, placeholderElem)
+        iframeToPlaceholder.set(iframe, placeholderElem)
     }
 }
 
 const reinstateIFrame = function(iframe) {
     if (iframe instanceof HTMLIFrameElement) {
+        const iframeSrc = getIFrameSrc(iframe)
+        if (iframeSrc) {
+            domainsBlocked.delete( iframeSrc )
+            domainsAllowed.add( iframeSrc )
+        }
+
         const iframePlaceholderElem = iframeToPlaceholder.get(iframe)
-        if (iframePlaceholderElem && iframePlaceholderElem.childElementCount) {
+        console.log(iframePlaceholderElem)
+        if (iframePlaceholderElem && !iframePlaceholderElem.childElementCount) {
             iframePlaceholderElem.appendChild(iframe)
         }
     }
@@ -33,16 +44,20 @@ const reinstateIFrame = function(iframe) {
 
 const getIFrameSrc = function(htmlNode) {
     if (htmlNode instanceof HTMLIFrameElement) {
-        const iframeSrc = node.getAttribute('src')
+        const iframeSrc = htmlNode.getAttribute('src')
         if (iframeSrc) {
             try {
                 const srcUrl = new URL(iframeSrc)
                 const srcDomain = srcUrl.hostname
                 if (srcDomain) return srcDomain
             } catch (e) {}
-        } else {
-            htmlNode.remove()
         }
     }
     return null
+}
+
+export {
+    replaceIFrame,
+    reinstateIFrame,
+    getIFrameSrc,
 }

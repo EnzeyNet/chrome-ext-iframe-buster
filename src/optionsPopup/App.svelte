@@ -1,14 +1,13 @@
 <script>
-    import Icon from 'svelte-awesome';
-    import {
-        faBars,
-    } from '@fortawesome/free-solid-svg-icons'
-
-	//import RoutedContent from './RoutedContent.svelte'
+    import AllowedDomainList from './Components/AllowedDomainList.svelte'
+    import BlockedDomainList from './Components/BlockedDomainList.svelte'
 </script>
 
 <main>
-    Hello World
+    <h3>Blocked</h3>
+    <BlockedDomainList />
+    <h3>Allowed</h3>
+    <AllowedDomainList />
 </main>
 
 <style>

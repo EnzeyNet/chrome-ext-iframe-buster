@@ -6,5 +6,3 @@ const app = new App({
 		name: 'IFrameBuster-OptionsPopup'
 	}
 });
-
-export default app;
