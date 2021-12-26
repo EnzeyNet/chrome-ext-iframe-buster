@@ -28,7 +28,7 @@ const store = {
         domainsAllowed.delete.apply(domainsAllowed.delete, arguments)
         updateStorage()
     },
-    has: domainsAllowed.has.bind(domainsAllowed.has),
+    has: domainsAllowed.has.bind(domainsAllowed),
 }
 
 export default store

@@ -1,29 +1,36 @@
-import { domainsAllowed } from './domainStore'
+import { domainsAllowed, domainsBlocked } from './domainStore'
 import {
    replaceIFrame,
    reinstateIFrame,
    getIFrameSrc,
 } from './iframeHijackHelper'
 
-import { getAction } from './messageActions'
+import extEventer from './eventer'
 
-const purgeIFramesOfDisallowedDomains = function(htmlNode) {
+const purgeIFramesOfDisallowedDomains = async function(htmlNode) {
     if (htmlNode instanceof HTMLIFrameElement) {
         const iframeSrcDomain = getIFrameSrc(htmlNode)
         if (!iframeSrcDomain) {
             htmlNode.remove()
-        } else if (iframeSrcDomain && !domainsAllowed.has(iframeSrcDomain)) {
-            chrome.runtime.sendMessage({
-                value: iframeSrcDomain,
-                action: 'DomainCheck'
-            }, (isAllowed) => {
-                if (isAllowed) {
-                    console.log(htmlNode)
-                    reinstateIFrame(htmlNode)
-                }
-            })
-
+        } else if (iframeSrcDomain) {
             replaceIFrame(htmlNode)
+            if (domainsBlocked.has(iframeSrcDomain)) {
+                // Leave iFrame purged
+            } else if (domainsAllowed.has(iframeSrcDomain)) {
+                reinstateIFrame(htmlNode)
+            } else {
+                console.error(iframeSrcDomain)
+                const isAllowed = await extEventer.sendMessageToBackgroundScript({
+                    value: iframeSrcDomain,
+                    action: 'isDomainAllowed'
+                })
+                if (isAllowed) {
+                    domainsAllowed.add(iframeSrcDomain)
+                    reinstateIFrame(htmlNode)
+                } else {
+                    domainsBlocked.add(iframeSrcDomain)
+                }
+            }
         }
     }
 }
@@ -46,11 +53,6 @@ var removeFrames = function() {
         purgeIFramesOfDisallowedDomains(node)
     });
 }
-
-chrome.runtime.onMessage.addListener(async function(msg, sender, sendResponse) {
-    const action = getAction(msg.action)
-    action(sendResponse)
-})
 
 // Create an observer instance linked to the callback function
 var observer = new MutationObserver(callback);

@@ -15,11 +15,4 @@ actionsMap.set('DomainsBlocked', (sendResponse) => {
     sendResponse(data)
 })
 
-const noop = () => {}
-export const getAction = (actionName) => {
-    const action = actionsMap.get(actionName)
-    if (action) {
-        return action
-    }
-    return noop
-}
+export default actionsMap
