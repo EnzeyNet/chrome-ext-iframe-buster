@@ -1,4 +1,4 @@
-import Eventer from './eventer'
+import Eventer from '../EventerClass'
 
 const rejectAfterDelay = (rejectFn) => {
     const delay = 1000/*ms*/ * 1/*seconds*/
@@ -7,9 +7,10 @@ const rejectAfterDelay = (rejectFn) => {
     })
 }
 
-class ChromeEventer extends Eventer {
+class OperaEvent extends Eventer {
     constructor() {
         super()
+		if (!this.isSupported()) throw 'Opera APIs not supported';
     }
 
     enableActionsListener() {
@@ -26,7 +27,6 @@ class ChromeEventer extends Eventer {
             chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
                 if (tabs && tabs[0] && tabs[0].id) {
                     chrome.tabs.sendMessage(tabs[0].id, message, (res) => {
-                        console.error(res)
                         resolve(res)
                     });
                 }
@@ -46,4 +46,4 @@ class ChromeEventer extends Eventer {
 
 }
 
-export default ChromeEventer
+export default OperaEvent

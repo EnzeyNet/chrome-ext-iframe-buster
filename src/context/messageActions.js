@@ -15,4 +15,13 @@ actionsMap.set('DomainsBlocked', (sendResponse) => {
     sendResponse(data)
 })
 
+actionsMap.set('GetLocation', (sendResponse) => {
+	sendResponse(window.location.hostname)
+})
+
+actionsMap.set('Reload', (sendResponse) => {
+	sendResponse()
+    window.location.reload()
+})
+
 export default actionsMap

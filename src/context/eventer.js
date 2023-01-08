@@ -1,4 +1,4 @@
-import ExtEventer from '../helpers/eventerChrome'
+import ExtEventer from '../helpers/eventer'
 import extentionActions from './messageActions'
 
 const extEventer = new ExtEventer()

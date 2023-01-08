@@ -1,44 +1,28 @@
+import extEventer from '../eventer'
 
-const domainsAllowedByPageDomain = new Map();
+const subdomainsAllowedByPageDomain = new Set()
+const DATA_KEY = 'AllowedSubdomains'
 
 const isString = function(domain) {
 	return typeof domain === 'string'
 }
 
-function pullDataFromStorage() {
-     chrome.storage.local.get('AllowedDomains', (allowedDomainsByPageDomain) => {
-         if (allowedDomainsByPageDomain) {
-             allowedDomainsByPageDomain = allowedDomainsByPageDomain['AllowedDomains']
-         } else {
-			 allowedDomainsByPageDomain  = {}
-		 }
+async function pullDataFromStorage() {
+	const data = await extEventer.getStoredData(DATA_KEY)
 
-		 for (let [pageDomain, allowedDomainsList] of Object.entries(allowedDomainsByPageDomain)) {
-			 const allowedDomainsSet = new Set()
-			 if (allowedDomainsList) {
-				 allowedDomainsList = Array.from(allowedDomainsList)
-				 allowedDomainsList = allowedDomainsList.filter(isString)
-				 allowedDomainsList.forEach(d => allowedDomainsSet.add(d))
-
-				 domainsAllowedByPageDomain.set(pageDomain, allowedDomainsSet)
-			 }
-		 }
-     })
+	subdomainsAllowedByPageDomain.clear()
+	 for (let [key, val] of Object.entries(data)) {
+		 subdomainsAllowedByPageDomain.add(key)
+	 }
 }
 
-function updateStorage () {
+async function updateStorage () {
 	const basicData = {}
-	for (let [pageDomain, allowedDomains] of domainsAllowedByPageDomain.entries()) {
-		if (allowedDomains) {
-			allowedDomains = Array.from(allowedDomains)
-			allowedDomains = allowedDomains.filter(isString)
-
-			basicData[pageDomain] = allowedDomains
-		}
-
+	for (let [key, value] of domainsAllowedByPageDomain.entries()) {
+		basicData[key] = true
 	}
 
-    chrome.storage.local.set({'AllowedDomains': basicData})
+	return await extEventer.setStoredData(DATA_KEY, basicData)
 }
 
 pullDataFromStorage()

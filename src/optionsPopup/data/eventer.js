@@ -1,5 +1,5 @@
-import ExtEventer from '../../helpers/eventerChrome'
+import ExtEventer from '../../helpers/eventer'
 
-const eventer = new ExtEventer()
+const extEventer = new ExtEventer()
 
-export default eventer
+export default extEventer

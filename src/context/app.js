@@ -1,4 +1,8 @@
-import { domainsAllowed, domainsBlocked } from './domainStore'
+import {
+	domainsAllowed,
+	domainsBlocked,
+} from './domainStore'
+
 import {
    replaceIFrame,
    reinstateIFrame,
@@ -7,43 +11,26 @@ import {
 
 import extEventer from './eventer'
 
+const pageLoction = window.location.hostname
+
+const storedAllowedDomains = new Set()
+
 const purgeIFramesOfDisallowedDomains = async function(htmlNode) {
     if (htmlNode instanceof HTMLIFrameElement) {
-        const iframeSrcDomain = getIFrameSrc(htmlNode)
-        if (!iframeSrcDomain) {
-            htmlNode.remove()
-        } else if (iframeSrcDomain) {
-            replaceIFrame(htmlNode)
-            if (domainsBlocked.has(iframeSrcDomain)) {
-                // Leave iFrame purged
-            } else if (domainsAllowed.has(iframeSrcDomain)) {
-                reinstateIFrame(htmlNode)
-            } else {
-                console.error(iframeSrcDomain)
-                const isAllowed = await extEventer.sendMessageToBackgroundScript({
-                    value: iframeSrcDomain,
-                    action: 'isDomainAllowed'
-                })
-                if (isAllowed) {
-                    domainsAllowed.add(iframeSrcDomain)
-                    reinstateIFrame(htmlNode)
-                } else {
-                    domainsBlocked.add(iframeSrcDomain)
-                }
-            }
-        }
-    }
-}
-
-// Options for the observer (which mutations to observe)
-var config = { attributes: false, childList: true, subtree: true };
-var callback = function(mutationsList, observer) {
-    for (var mutation of mutationsList) {
-        if (mutation.type == 'childList' && mutation.addedNodes.length) {
-			for (var node of mutation.addedNodes) {
-                purgeIFramesOfDisallowedDomains(node)
-			}
-        }
+		if (htmlNode.nodeName && htmlNode.nodeName.toUpperCase() === 'IFRAME') {
+	        const iframeSrcDomain = getIFrameSrc(htmlNode)
+	        if (!iframeSrcDomain) {
+	            htmlNode.remove()
+	        } else if (iframeSrcDomain) {
+	            const isAllowed = storedAllowedDomains.has(iframeSrcDomain)
+	            if (isAllowed) {
+	                domainsAllowed.add(iframeSrcDomain)
+	            } else {
+		            replaceIFrame(htmlNode)
+	                domainsBlocked.add(iframeSrcDomain)
+	            }
+	        }
+	    }
 	}
 }
 
@@ -54,15 +41,42 @@ var removeFrames = function() {
     });
 }
 
+
+// Options for the observer (which mutations to observe)
+var config = { attributes: false, childList: true, subtree: true };
+var callback = function(mutationsList, observer) {
+	if (mutationsList) {
+	    for (var mutation of mutationsList) {
+	        if (mutation.type == 'childList' && mutation.addedNodes.length) {
+				for (var node of mutation.addedNodes) {
+	                purgeIFramesOfDisallowedDomains(node)
+				}
+	        }
+		}
+	}
+}
+
 // Create an observer instance linked to the callback function
 var observer = new MutationObserver(callback);
 
-// Start observing the target node for configured mutations
-observer.observe(window.document, config);
+
 
 /*
     All IFrames are initially removed from the document.
     This is to ensure they do not load anything until the
     async service confirms the domain is trusted.
 */
-removeFrames();
+const init = async () => {
+	const domains = await extEventer.sendMessageToBackgroundScript({
+		action: 'DomainsAllowedHere',
+		value: pageLoction,
+	})
+	if (domains) {
+		domains.forEach(d => storedAllowedDomains.add(d))
+	}
+	removeFrames();
+
+	// Start observing the target node for configured mutations
+	observer.observe(window.document, config);
+}
+init()

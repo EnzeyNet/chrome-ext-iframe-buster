@@ -2,16 +2,16 @@ import allowedDomains from './allowedDomainsStore'
 
 const actionsMap = new Map()
 
-actionsMap.set('isDomainAllowed', (sendResponse, domainName) => {
-    sendResponse(allowedDomains.has(domainName))
+actionsMap.set('DomainBlocked', (sendResponse, data) => {
+    sendResponse(allowedDomains.remove(data.pageDomain, data.domain))
 })
 
-actionsMap.set('DomainBlock', (sendResponse, domainName) => {
-    sendResponse(allowedDomains.delete(domainName))
+actionsMap.set('DomainAllowed', (sendResponse, data) => {
+    sendResponse(allowedDomains.add(data.pageDomain, data.domain))
 })
 
-actionsMap.set('DomainUnblock', (sendResponse, domainName) => {
-    sendResponse(allowedDomains.add(domainName))
+actionsMap.set('DomainsAllowedHere', (sendResponse, pageDomain) => {
+    sendResponse(allowedDomains.list(pageDomain))
 })
 
 export default actionsMap

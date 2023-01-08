@@ -1,27 +1,28 @@
+import eventerChrome from './impl/eventerChrome';
+import eventerEdge from './impl/eventerEdge';
+import eventerFirefox from './impl/eventerFirefox';
+import eventerOpera from './impl/eventerOpera';
 
-class Eventer {
-    #actionsMap = new Map()
-    #noop = () => {}
+const createAPI = () => {
+	const impls = [
+		eventerChrome,
+		eventerEdge,
+		eventerFirefox,
+		eventerOpera,
+	].filter(impl => {
+		try {
+			new impl();
+			return true
+		} catch (e) {
+			return false
+		}
+	});
 
-    addAction(eventName, action) {
-        this.#actionsMap.set(eventName, action)
-    }
-
-    removeAction(eventName) {
-        this.#actionsMap.delete(eventName)
-    }
-
-    getAction(actionName) {
-        const action = this.#actionsMap.get(actionName)
-        if (action) {
-            return action
-        }
-        return this.#noop
-    }
-
-    async sendMessageToContentScript(message, callback) {}
-    async sendMessageToBackgroundScript(message, callback) {}
-
+	const ValidImpl = impls.pop();
+	if (!ValidImpl) {
+		console.error('no valid extention APIs found')
+	}
+	return ValidImpl;
 }
 
-export default Eventer
+export default ( createAPI() )
